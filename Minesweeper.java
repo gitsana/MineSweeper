@@ -28,19 +28,56 @@ public class Minesweeper {
 
     }
 
+    public void startSolverGame() {
+        // start with random coordinates
+        this.playerType = PlayerType.SOLVER;
+        int x = getCoordinate(playerType, gameboard.getBoardRows());
+        int y = getCoordinate(playerType, gameboard.getBoardColumns());
+        BoardCell currentCell = gameboard.getBoardCellByCoordinates(x, y);
+
+        while ((gameStatus == GameStatus.IN_PROGRESS) || (gameStatus == GameStatus.NEW_GAME)) {
+            gameboard.uncoverCell(x, y);
+            if (gameboard.isMineHit()) {
+                gameStatus = GameStatus.PLAYER_LOST;
+                break;
+            }
+            if (gameboard.getNumMines() == gameboard.getNumCoveredCells()) {
+                gameStatus = GameStatus.PLAYER_WON;
+                break;
+            }
+
+            // if neither lost or won, continue and figure out next cell to uncover
+            // if there is more 50% chance of hitting a mine, we'd rather take our chances and randomly hit somewhere else
+            if ((currentCell.getNumberAdjacentUncoveredCells() > 0) && (currentCell.probabilityAdjacentUncoveredCellIsMine() <= 0.5)) {
+                // hit first uncovered cell ( get x, y coords for uncovering cell)
+                currentCell = currentCell.getFirstUncoveredAdjacentCell();
+                x = currentCell.getxCoordinate();
+                y = currentCell.getyCoordinate();
+            }
+            else {
+                // randomly hit somewhere on the board - TODO optimize so it doesn't repeat the same place
+                x = getCoordinate(playerType, gameboard.getBoardRows());
+                y = getCoordinate(playerType, gameboard.getBoardColumns());
+                currentCell = gameboard.getBoardCellByCoordinates(x, y);
+            }
+        }
+    }
+
     public void startGame(PlayerType playerType) {
 
         this.playerType = playerType; // either keyboard user or solver
         // if playerType is a user, give directions on input console; otherwise, no need.
         if (playerType == PlayerType.KEYBOARD_INPUT) {
             System.out.println("Starting the Minesweeper game. Press -99 for both coordinates to quit the game. Below is your board.");
-            gameboard.printBoardWithoutMines();
+            gameboard.printBoardToPlayer();
+            System.out.println("exposed:");
+            gameboard.printBoardExposed();
         }
 
         while ((gameStatus == GameStatus.IN_PROGRESS) || (gameStatus == GameStatus.NEW_GAME)) {
 
-            int x = getCoordinate(playerType, gameboard.getX());
-            int y = getCoordinate(playerType, gameboard.getY());
+            int x = getCoordinate(playerType, gameboard.getBoardRows());
+            int y = getCoordinate(playerType, gameboard.getBoardColumns());
 
             if ((x == -99) && (y == -99) && (playerType == PlayerType.KEYBOARD_INPUT)) {
                 gameStatus = GameStatus.GAME_QUIT;
@@ -69,9 +106,12 @@ public class Minesweeper {
                 }
 
                 if (playerType == PlayerType.KEYBOARD_INPUT) {
-                    gameboard.printBoardWithoutMines();
+                    System.out.println("player board");
+                    gameboard.printBoardToPlayer();
+                    System.out.println("exposed board:");
+                    gameboard.printBoardExposed(); //debugging
                 }
-            }
+            } // else
 
         } // while loop
     }
@@ -79,7 +119,7 @@ public class Minesweeper {
     private void showStats() {
         if (playerType == PlayerType.KEYBOARD_INPUT) { // show user information
             System.out.println("Game status: " + gameStatus + "\tAttempts: " + attempts + "\nCurrent board state, showing mines:");
-            gameboard.printBoardShowingMines();
+            gameboard.printBoardExposed();
         }
     }
 
