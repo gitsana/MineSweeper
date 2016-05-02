@@ -1,8 +1,8 @@
 # MineSweeper
 
-This game can be playes in 2 ways:
-1. As a user, from the terminal with prompts
-2. As a solver, which automatically plays 100,000 games and outputs results into the console
+This game can be played in 2 ways:
+ 1. As a user, from the terminal with prompts
+ 2. As a solver, which automatically plays 100,000 games and outputs results into the console
 
 **1 - Playing Minesweeper as a user from the terminal**
 - Run the program "MainPlayer.java", making sure all classes and enums are present
